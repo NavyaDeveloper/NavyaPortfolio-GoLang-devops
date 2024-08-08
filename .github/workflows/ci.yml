@@ -1,8 +1,5 @@
-# CICD using GitHub actions
+name: CI/CD Pipeline
 
-name: CI/CD
-
-# Exclude the workflow to run on changes to the helm chart
 on:
   push:
     branches:
@@ -16,25 +13,23 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Set up Go 1.22
-      uses: actions/setup-go@v2
+    - name: Set up Go
+      uses: actions/setup-go@v4
       with:
         go-version: 1.22
 
-    - name: Build
+    - name: Build Go application
       run: go build -o go-web-app
 
-    - name: Test
+    - name: Run Go tests
       run: go test ./...
   
-  code-quality:
+  lint:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -44,17 +39,15 @@ jobs:
       with:
         version: v1.56.2
   
-  push:
+  docker:
     runs-on: ubuntu-latest
-
     needs: build
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v2
 
     - name: Login to DockerHub
       uses: docker/login-action@v3
@@ -62,7 +55,7 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build and Push action
+    - name: Build and Push Docker image
       uses: docker/build-push-action@v6
       with:
         context: .
@@ -70,25 +63,21 @@ jobs:
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/navyaportfolio-golang:${{github.run_id}}
 
-  update-newtag-in-helm-chart:
+  update-helm:
     runs-on: ubuntu-latest
-
-    needs: push
-
+    needs: docker
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.TOKEN }}
 
-    - name: Update tag in Helm chart
+    - name: Update Helm chart image tag
       run: |
         sed -i 's/tag: .*/tag: "${{github.run_id}}"/' helm/go-web-application-chart/values.yaml
 
-    - name: Commit and push changes
+    - name: Commit and push Helm chart changes
       run: |
         git config --global user.email "navya2022developer@gmail.com"
         git config --global user.name "NavyaDeveloper"
         git add helm/go-web-application-chart/values.yaml
-        git commit -m "Update tag in Helm chart"
+        git commit -m "Update Docker image tag in Helm chart to ${{github.run_id}}"
         git push
