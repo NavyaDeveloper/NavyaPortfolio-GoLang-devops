@@ -78,8 +78,8 @@ jobs:
 
     - name: Commit and push Helm chart changes
       run: |
-        git config --global user.email "navya2022developer@gmail.com"
-        git config --global user.name "NavyaDeveloper"
+        git config --global user.email "${{ secrets.EMAIL }}"
+        git config --global user.name "${{ secrets.USERNAME }}"
         git add helm/go-web-application-chart/values.yaml
         git commit -m "Update Docker image tag in Helm chart to ${{github.run_id}}"
         git push
