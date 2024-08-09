@@ -83,3 +83,30 @@ jobs:
         git add helm/go-web-application-chart/values.yaml
         git commit -m "Update Docker image tag in Helm chart to ${{github.run_id}}"
         git push
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [build, lint, docker, update-helm]
+    if: always()  # Run this job regardless of the outcome of other jobs
+    steps:
+    - name: Send notification email
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com  # Change this to your SMTP server
+        server_port: 465
+        username: ${{ secrets.EMAIL }}
+        password: ${{ secrets.SMTP_PASSWORD }}
+        subject: GitHub Actions CI/CD Pipeline - ${{ github.workflow }} - ${{ job.status }}
+        to: ${{ secrets.EMAIL }}
+        from: GitHub Actions <${{ secrets.EMAIL }}>
+        body: |
+          CI/CD Pipeline Summary for ${{ github.repository }}:
+          
+          Build Status: ${{ needs.build.result }}
+          Lint Status: ${{ needs.lint.result }}
+          Docker Build & Push Status: ${{ needs.docker.result }}
+          Helm Update Status: ${{ needs.update-helm.result }}
+          
+          For details, check the [GitHub Actions log](${{
+            github.server_url
+          }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
