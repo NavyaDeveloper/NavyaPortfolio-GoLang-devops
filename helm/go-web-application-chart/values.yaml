@@ -4,5 +4,5 @@
 
 image:
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "10314230927"
+  tag: "10314409969"
 
