@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: go-web-app
-        image: navyaa14/navyaportfolio-golang:{{ .Values.image.tag }}
+        image: navyaa14/private-navyaportfolio-golang:{{ .Values.image.tag }}
         ports:
         - containerPort: 8080
       imagePullSecrets:

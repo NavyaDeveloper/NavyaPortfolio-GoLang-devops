@@ -61,7 +61,7 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/navyaportfolio-golang:${{github.run_id}}
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/private-navyaportfolio-golang:${{github.run_id}}
 
   update-helm:
     runs-on: ubuntu-latest
