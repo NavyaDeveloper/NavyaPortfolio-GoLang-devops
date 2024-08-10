@@ -17,6 +17,6 @@ spec:
     spec:
       containers:
       - name: go-web-app
-        image: navyaa14/navyaportfolio-golang:v2
+        image: image name
         ports:
         - containerPort: 8080
